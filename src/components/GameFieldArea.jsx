@@ -36,6 +36,7 @@ const GameFieldArea = () => {
 
     //Definde moves
     //const [playerOne, setPlayerOne] = useState([]);
+    //const [playerTwo, setPlayerTwo] = useState([]);
 
 
     //Update Game Area every move
@@ -66,10 +67,12 @@ const GameFieldArea = () => {
 
     const updatePlayer = (id) => {
     //Change player
-        if (player === 1) {
-            setPlayer(0);
-        } else {
+        if (player === 0) {
             setPlayer(1);
+            //setPlayerOne(...playerOne, id);
+        } else {
+            setPlayer(0);
+            //setPlayerOne(...playerTwo, id);
         }
     }
 
