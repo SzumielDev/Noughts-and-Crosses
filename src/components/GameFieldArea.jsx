@@ -1,6 +1,6 @@
 import circleImg from "./../resources/images/circle.png";
 import crossImg from "./../resources/images/cross.png";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 const GameFieldArea = () => {
 
@@ -43,17 +43,11 @@ const GameFieldArea = () => {
     const [gameStatus, setGameStatus] = useState(1);
 
     const checkGameStatus = (id) => {
-        if (gameStatus === 0) {
-            console.log("Wystartuj grę")
-        } else if (gameStatus === 1) {
+        if (gameStatus === 1) {
             console.log("Gra w toku")
-            updateGame(id);
-        } else if (gameStatus === 2) {
-            console.log("Wygrywa gracz 1")
-        } else if (gameStatus === 3) {
-            console.log("Wygrywa gracz 2")
+            updateGame(id);           
         } else {
-            console.log("Koniec gry, nie ma wygranych. Kliknij restart aby zagrać ponownie.")
+            console.log("Gra została zakończona")
         }
     }
 
@@ -62,44 +56,59 @@ const GameFieldArea = () => {
         const updateGameArea = gameArea.map(field => {
         if (field.id === id) {
             if (player === 0) {
-            return {
-                ...field,
-                src: crossImg,
-                player: player,
-            }
+                return {
+                    ...field,
+                    src: crossImg,
+                    player: player,
+                }
             } else {
-            return {
-                ...field,
-                src: circleImg,
-                player: player,
-            }
+                return {
+                    ...field,
+                    src: circleImg,
+                    player: player,
+                }
             }
         } 
         return field;
         });
-        setGameArea(updateGameArea);
-        checkFieldStatus(id);
+        setGameArea(updateGameArea)
     }
+
+    useEffect((id) => {
+        checkFieldStatus(id)
+    }, [gameArea]);
 
     //Check if someone win the game
     const checkFieldStatus = (id) => {
-        let closedFields = gameArea.map (i => i.player)
-        console.log(closedFields)
+            let closedFields = gameArea.map (i => i.player)
+            console.log(closedFields)
+    
+            for (let [a, b, c] of gameWiner) {
+                const fieldA = a - 1;
+                const fieldB = b - 1;
+                const fieldC = c - 1;
+    
+                if (closedFields[fieldA] === 0 && closedFields[fieldB] === 0 && closedFields[fieldC] === 0) {
+                    setGameStatus(2)
+                    break;
+                } else if (closedFields[fieldA] === 1 && closedFields[fieldB] === 1 && closedFields[fieldC] === 1) {
+                    setGameStatus(3)
+                    break;
+                } 
+            }
+            checkWinnerStatus();
+    }
 
-        for (let [a, b, c] of gameWiner) {
-            const fieldA = a - 1;
-            const fieldB = b - 1;
-            const fieldC = c - 1;
-
-            if (closedFields[fieldA] === 0 && closedFields[fieldB] === 0 && closedFields[fieldC] === 0) {
-                setGameStatus(2)
-                break;
-            } else if (closedFields[fieldA] === 1 && closedFields[fieldB] === 1 && closedFields[fieldC] === 1) {
-                setGameStatus(3)
-                break;
-            } 
+    const checkWinnerStatus = () => {  
+        if (gameStatus === 2) {
+            console.log("Wygrywa gracz 1")
+        } else if (gameStatus === 3) {
+            console.log("Wygrywa gracz 2")
+        } else if ( gameStatus === 4) {
+            console.log("Koniec gry, nie ma wygranych. Kliknij restart aby zagrać ponownie.")
+        } else {
+            updatePlayer();
         }
-        updatePlayer();
     }
 
     const updatePlayer = () => {
