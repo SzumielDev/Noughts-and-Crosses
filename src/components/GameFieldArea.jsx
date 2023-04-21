@@ -4,6 +4,8 @@ import React, { useEffect, useState } from "react";
 
 const GameFieldArea = () => {
 
+    const [isActive, setIsActive] = useState(false);
+
     //Definde fields
     const [gameArea, setGameArea] = useState([
         {id: 1, src: "", player: ""},
@@ -33,6 +35,11 @@ const GameFieldArea = () => {
     //1 player = 0
     //2 player = 1
     const [player, setPlayer] = useState(0);
+    const [playerOneScores, setPlayerOneScores] = useState(0);
+    const [playerTwoScores, setPlayerTwoScores] = useState(0);
+
+    //Set Game Text
+    const [gameText, setGameText] = useState("Kliknij przycisk aby zagrać ( ͡° ͜ʖ ͡°)")
 
     //Set Game Status
     //0 = not started
@@ -40,14 +47,20 @@ const GameFieldArea = () => {
     //2 = game ended winner 1
     //3 = game ended winner 2
     //4 = game over
-    const [gameStatus, setGameStatus] = useState(1);
+    const [gameStatus, setGameStatus] = useState(0);
+
+    const startGame = () => {
+        setIsActive(true)
+        setGameStatus(1)
+        setGameText("Gra rozpoczęta, nie oszukuj!")
+    }
 
     const checkGameStatus = (id) => {
         if (gameStatus === 1) {
-            console.log("Gra w toku")
-            updateGame(id);           
+            console.log(player)
+            updateGame(id);         
         } else {
-            console.log("Gra została zakończona")
+            checkWinnerStatus();
         }
     }
 
@@ -74,15 +87,24 @@ const GameFieldArea = () => {
         setGameArea(updateGameArea)
     }
 
-    useEffect((id) => {
-        checkFieldStatus(id)
+    useEffect(() => {
+        checkFieldStatus()
+        checkWinnerStatus()
+        checkGameOver();
+    if (gameStatus !== 0) {
+        if (player === 0) {
+            setPlayer(1);
+        } else {
+            setPlayer(0);
+        }
+    }
+
+
     }, [gameArea]);
 
     //Check if someone win the game
-    const checkFieldStatus = (id) => {
-            let closedFields = gameArea.map (i => i.player)
-            console.log(closedFields)
-    
+    const checkFieldStatus = () => {
+            let closedFields = gameArea.map (i => i.player)    
             for (let [a, b, c] of gameWiner) {
                 const fieldA = a - 1;
                 const fieldB = b - 1;
@@ -90,13 +112,18 @@ const GameFieldArea = () => {
     
                 if (closedFields[fieldA] === 0 && closedFields[fieldB] === 0 && closedFields[fieldC] === 0) {
                     setGameStatus(2)
+                    checkGameStatus()
+                    setGameText("Wygrywa gracz 1")
+                    setPlayerOneScores(playerOneScores + 1)
                     break;
                 } else if (closedFields[fieldA] === 1 && closedFields[fieldB] === 1 && closedFields[fieldC] === 1) {
                     setGameStatus(3)
+                    checkGameStatus()
+                    setGameText("Wygrywa gracz 2")
+                    setPlayerTwoScores(playerTwoScores + 1)
                     break;
                 } 
             }
-            checkWinnerStatus();
     }
 
     const checkWinnerStatus = () => {  
@@ -106,19 +133,7 @@ const GameFieldArea = () => {
             console.log("Wygrywa gracz 2")
         } else if ( gameStatus === 4) {
             console.log("Koniec gry, nie ma wygranych. Kliknij restart aby zagrać ponownie.")
-        } else {
-            updatePlayer();
         }
-    }
-
-    const updatePlayer = () => {
-    //Change player
-        if (player === 0) {
-            setPlayer(1);
-        } else {
-            setPlayer(0);
-        }
-        checkGameOver();
     }
 
     //Check that each field is filled
@@ -135,18 +150,25 @@ const GameFieldArea = () => {
 
     const resetGame = () => {
         //reset player
-        setPlayer(0);
+        if (player === 0) {
+           setPlayer(1);
+        } else {
+            setPlayer(0);
+        }
+
         //reset gameArea
         const resetGameArea = gameArea.map(i => {
             return {...i, src: '', player: ''};
         });
         setGameArea(resetGameArea);
         setGameStatus(1);
+        setGameText("Wygrane rundy: " + "Gracz 1 - " + playerOneScores + " Gracz 2 - " + playerTwoScores)
     }
 
     return (
         <div>
-            <div className="game-container">
+            <div className=""><h1>{gameText}</h1></div>
+            <div className={isActive ? "game-container" : "none"}>
                 {gameArea.map(field => (
                     <div key={field.id} onClick={() => {
                         if (field.src !== "") {
@@ -157,7 +179,8 @@ const GameFieldArea = () => {
                     }} className="game-item"><img className="filler" src={field.src} /></div>
                 ))}
             </div>
-            <button onClick={resetGame} className="button-item">Restart gry</button> 
+            <button onClick={resetGame} className={isActive ? "button-item" : "none"}>Restart gry</button> 
+            <button onClick={startGame} className={isActive ? "none" : "button-item"}>Wystartuj grę</button> 
         </div>
     )
     }
