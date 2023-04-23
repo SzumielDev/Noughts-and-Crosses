@@ -1,25 +1,18 @@
 import circleImg from "./../resources/images/circle.png";
 import crossImg from "./../resources/images/cross.png";
+import img from "./../resources/images/img.png";
 import React, { useEffect, useState } from "react";
 
 const GameFieldArea = () => {
 
+    //Show and hide section
     const [isActive, setIsActive] = useState(false);
+    const [isTextActive, setTextIsActive] = useState(false);
 
     //Definde fields
-    const [gameArea, setGameArea] = useState([
-        {id: 1, src: "", player: ""},
-        {id: 2, src: "", player: ""},
-        {id: 3, src: "", player: ""},
-        {id: 4, src: "", player: ""},
-        {id: 5, src: "", player: ""},
-        {id: 6, src: "", player: ""},
-        {id: 7, src: "", player: ""},
-        {id: 8, src: "", player: ""},
-        {id: 9, src: "", player: ""},
-    ]);
+    const [gameArea, setGameArea] = useState(Array.from({length: 9}, (_, index) => ({id: index + 1, src: "", player: ""})));
 
-    //win status
+    //win config
     const gameWiner = [
         [1, 2, 3], 
         [4, 5, 6], 
@@ -39,9 +32,8 @@ const GameFieldArea = () => {
     const [playerTwoScores, setPlayerTwoScores] = useState(0);
 
     //Set Game Text
-    const [gameText, setGameText] = useState("Kliknij przycisk aby zagrać ( ͡° ͜ʖ ͡°)")
+    const [gameText, setGameText] = useState(<img className="img" src={img} />)
 
-    //Set Game Status
     //0 = not started
     //1 = game in progress
     //2 = game ended winner 1
@@ -52,15 +44,12 @@ const GameFieldArea = () => {
     const startGame = () => {
         setIsActive(true)
         setGameStatus(1)
-        setGameText("Gra rozpoczęta, nie oszukuj!")
+        setGameText("Gra w trakcie!")
     }
 
     const checkGameStatus = (id) => {
         if (gameStatus === 1) {
-            console.log(player)
             updateGame(id);         
-        } else {
-            checkWinnerStatus();
         }
     }
 
@@ -89,22 +78,15 @@ const GameFieldArea = () => {
 
     useEffect(() => {
         checkFieldStatus()
-        checkWinnerStatus()
         checkGameOver();
-    if (gameStatus !== 0) {
-        if (player === 0) {
-            setPlayer(1);
-        } else {
-            setPlayer(0);
+        if (gameStatus !== 0) {
+            changePlayerStatement();
         }
-    }
-
-
     }, [gameArea]);
 
-    //Check if someone win the game
+    //Check if someone win the game - set winner
     const checkFieldStatus = () => {
-            let closedFields = gameArea.map (i => i.player)    
+            let closedFields = gameArea.map (i => i.player)   
             for (let [a, b, c] of gameWiner) {
                 const fieldA = a - 1;
                 const fieldB = b - 1;
@@ -112,13 +94,11 @@ const GameFieldArea = () => {
     
                 if (closedFields[fieldA] === 0 && closedFields[fieldB] === 0 && closedFields[fieldC] === 0) {
                     setGameStatus(2)
-                    checkGameStatus()
                     setGameText("Wygrywa gracz 1")
                     setPlayerOneScores(playerOneScores + 1)
                     break;
                 } else if (closedFields[fieldA] === 1 && closedFields[fieldB] === 1 && closedFields[fieldC] === 1) {
                     setGameStatus(3)
-                    checkGameStatus()
                     setGameText("Wygrywa gracz 2")
                     setPlayerTwoScores(playerTwoScores + 1)
                     break;
@@ -126,48 +106,45 @@ const GameFieldArea = () => {
             }
     }
 
-    const checkWinnerStatus = () => {  
-        if (gameStatus === 2) {
-            console.log("Wygrywa gracz 1")
-        } else if (gameStatus === 3) {
-            console.log("Wygrywa gracz 2")
-        } else if ( gameStatus === 4) {
-            console.log("Koniec gry, nie ma wygranych. Kliknij restart aby zagrać ponownie.")
+    //Change player
+    const changePlayerStatement = () => {
+        if (player === 0) {
+            setPlayer(1);
+        } else {
+            setPlayer(0);
         }
     }
 
-    //Check that each field is filled
+    //Check each field is filled - Set game Over
     const checkGameOver = () => {
-        const playerNotEmpty = gameArea.every((i) => !!i.player);
+        const playerNotEmpty = gameArea.every(i => i.player !== "");
         if (playerNotEmpty) {
             setGameStatus(4)
+            setGameText("Nie ma zwycięzcy, zrestartuj aby zagrać ponownie.")
         }
     }
 
     const closeFunction = (id) => {
-        console.log("Pole " + id + " zostało już kliknięte!");
+        alert("Pole " + id + " zostało już kliknięte!");
     }
 
+    //Reset game and show scores
     const resetGame = () => {
-        //reset player
-        if (player === 0) {
-           setPlayer(1);
-        } else {
-            setPlayer(0);
-        }
-
-        //reset gameArea
+        changePlayerStatement()
         const resetGameArea = gameArea.map(i => {
             return {...i, src: '', player: ''};
         });
         setGameArea(resetGameArea);
         setGameStatus(1);
-        setGameText("Wygrane rundy: " + "Gracz 1 - " + playerOneScores + " Gracz 2 - " + playerTwoScores)
+        setGameText("Wygrane rundy:")
+        setTextIsActive(true)
     }
 
     return (
         <div>
-            <div className=""><h1>{gameText}</h1></div>
+            <div className="text"><p>{gameText}</p>
+            <p className={isTextActive ? "small" : "none"}>Gracz pierwszy: {playerOneScores}</p>
+            <p className={isTextActive ? "small" : "none"}>Gracz drugi: {playerTwoScores}</p></div>
             <div className={isActive ? "game-container" : "none"}>
                 {gameArea.map(field => (
                     <div key={field.id} onClick={() => {
@@ -179,8 +156,8 @@ const GameFieldArea = () => {
                     }} className="game-item"><img className="filler" src={field.src} /></div>
                 ))}
             </div>
-            <button onClick={resetGame} className={isActive ? "button-item" : "none"}>Restart gry</button> 
-            <button onClick={startGame} className={isActive ? "none" : "button-item"}>Wystartuj grę</button> 
+            <button onClick={startGame} className={isActive ? "none" : "button-item"}>START</button> 
+            <button onClick={resetGame} className={isActive ? "button-item padd" : "none"}>RESTART</button>
         </div>
     )
     }

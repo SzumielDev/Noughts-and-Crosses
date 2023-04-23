@@ -32,7 +32,10 @@
     box-shadow: 0 0 2px black;
     color:rgb(102, 102, 102);
     transition: 0.5s;
-    margin-top:50px;
+}
+
+.padd {
+    margin-top: 20px;
 }
 
 .button-item:hover {
@@ -43,6 +46,18 @@
 .filler {
     width: 100%;
     cursor: not-allowed;
+}
+
+.text {
+    font-size: 25px;
+}
+
+.small {
+    font-size: 15px;
+}
+
+.img {
+    width:200px;
 }
 
 .none {
