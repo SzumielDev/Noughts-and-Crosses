@@ -10,7 +10,7 @@ const GameFieldArea = () => {
     const [isTextActive, setTextIsActive] = useState(false);
 
     //Definde fields
-    const [gameArea, setGameArea] = useState(Array.from({length: 9}, (_, index) => ({id: index + 1, src: "", player: ""})));
+    const [gameArea, setGameArea] = useState(Array.from({length: 9}, (_, i) => ({id: i + 1, src: "", player: ""})));
 
     //win config
     const gameWiner = [
