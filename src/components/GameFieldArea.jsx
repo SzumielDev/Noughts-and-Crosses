@@ -1,6 +1,6 @@
 import circleImg from "./../resources/images/circle.png";
 import crossImg from "./../resources/images/cross.png";
-import img from "./../resources/images/img.png";
+import startImg from "./../resources/images/img.png";
 import React, { useEffect, useState } from "react";
 
 const GameFieldArea = () => {
@@ -32,7 +32,7 @@ const GameFieldArea = () => {
     const [playerTwoScores, setPlayerTwoScores] = useState(0);
 
     //Set Game Text
-    const [gameText, setGameText] = useState(<img className="img" src={img} />)
+    const [gameText, setGameText] = useState(<img alt="img" className="img" src={startImg} />)
 
     //0 = not started
     //1 = game in progress
@@ -45,6 +45,14 @@ const GameFieldArea = () => {
         setIsActive(true)
         setGameStatus(1)
         setGameText("Gra w trakcie!")
+    }
+
+    const clickHandle = (field) => {
+        if (field.src !== "") {
+            closeFunction(field.id);
+        } else {
+            checkGameStatus(field.id)
+        }
     }
 
     const checkGameStatus = (id) => {
@@ -77,11 +85,11 @@ const GameFieldArea = () => {
     }
 
     useEffect(() => {
-        checkFieldStatus()
+        checkFieldStatus();
         checkGameOver();
         if (gameStatus !== 0) {
             changePlayerStatement();
-        }
+        } // eslint-disable-next-line
     }, [gameArea]);
 
     //Check if someone win the game - set winner
@@ -131,13 +139,10 @@ const GameFieldArea = () => {
     //Reset game and show scores
     const resetGame = () => {
         changePlayerStatement()
-        const resetGameArea = gameArea.map(i => {
-            return {...i, src: '', player: ''};
-        });
-        setGameArea(resetGameArea);
         setGameStatus(1);
         setGameText("Wygrane rundy:")
         setTextIsActive(true)
+        setGameArea(Array.from({length: 9}, (_, i) => ({id: i + 1, src: "", player: ""})));
     }
 
     return (
@@ -146,14 +151,8 @@ const GameFieldArea = () => {
             <p className={isTextActive ? "small" : "none"}>Gracz pierwszy: {playerOneScores}</p>
             <p className={isTextActive ? "small" : "none"}>Gracz drugi: {playerTwoScores}</p></div>
             <div className={isActive ? "game-container" : "none"}>
-                {gameArea.map(field => (
-                    <div key={field.id} onClick={() => {
-                        if (field.src !== "") {
-                            closeFunction(field.id);
-                        } else {
-                            checkGameStatus(field.id)
-                        }
-                    }} className="game-item"><img className="filler" src={field.src} /></div>
+                {gameArea.map(field => ( // eslint-disable-next-line
+                    <div key={field.id} onClick={() => {clickHandle(field)}} className="game-item"><img className="filler" src={field.src} /></div>
                 ))}
             </div>
             <button onClick={startGame} className={isActive ? "none" : "button-item"}>START</button> 
