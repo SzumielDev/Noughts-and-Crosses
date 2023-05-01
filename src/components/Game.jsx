@@ -1,4 +1,5 @@
 import GameFieldArea from './GameFieldArea';
+import OpenCases from './OpenCases';
 
 const Game = () => {
 
