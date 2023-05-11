@@ -1,173 +1,101 @@
+import React, { useEffect, useState } from "react";
+import Field from './Field';
 import circleImg from "./../resources/images/circle.png";
 import crossImg from "./../resources/images/cross.png";
-import startImg from "./../resources/images/img.png";
-import React, { useEffect, useState } from "react";
 
 const GameFieldArea = () => {
 
     //Definde how big is gameArea
     const [numberOfField, setNumberOfField] = useState(10);
 
-    //Generate gameArea
-    const [gameArea, setGameArea] = useState(
-        Array.from({length: numberOfField}, () => Array.from({length: numberOfField}, (_, i) => ({ id: i + 1, src: '', player: ''})))
-    )
-
-    useEffect(() => {
-        console.log(gameArea)
-    }, gameArea);
-
-    const konsola = (field) => {
-        console.log(field)
-    }
-
-
-
-
-
-
-
-
-
-
-    //Show and hide section
-    const [isActive, setIsActive] = useState(false);
-    const [isTextActive, setTextIsActive] = useState(false);
-
-    //Set Player
-    //1 player = 0
-    //2 player = 1
-    const [player, setPlayer] = useState(0);
-    const [playerOneScores, setPlayerOneScores] = useState(0);
-    const [playerTwoScores, setPlayerTwoScores] = useState(0);
-
-    //Set Game Text
-    const [gameText, setGameText] = useState(<img alt="img" className="img" src={startImg} />)
+    const [playerOneFields, setPlayerOneFields] = useState([]);
+    const [playerTwoFields, setPlayerTwoFields] = useState([]);
+    const [deltedFields, setDeletedFields] = useState([]);
 
     //0 = not started
     //1 = game in progress
     //2 = game ended winner 1
     //3 = game ended winner 2
     //4 = game over
-    const [gameStatus, setGameStatus] = useState(0);
+    const [gameStatus, setGameStatus] = useState(1);
 
-    // const startGame = () => {
-    //     setIsActive(true)
-    //     setGameStatus(1)
-    //     setGameText("Gra w trakcie!")
-    // }
+    const [player, setPlayer] = useState(0);
 
-    // const clickHandle = (field) => {
-    //     if (field.src !== "") {
-    //         closeFunction(field.id);
-    //     } else {
-    //         checkGameStatus(field.id)
-    //     }
-    // }
+    const [fieldState, setFieldState] = useState(
+      Array.from({ length: numberOfField * numberOfField }, () => null)
+    );
 
-    // const checkGameStatus = (id) => {
-    //     if (gameStatus === 1) {
-    //         updateGame(id);         
-    //     }
-    // }
+    const gameArea = () => {
+        return Array.from({ length: numberOfField }, (_, rowIndex) => (
+          <tr key={rowIndex}>
+                {Array.from({ length: numberOfField }, (_, colIndex) => {
+                    const index = rowIndex * numberOfField + colIndex
+                    return (
+                        <td key={index} onClick={() => {
+                            if (!fieldState[index]) {
+                              saveCoordinations(rowIndex, colIndex, index)
+                            } else {
+                              alert("To pole zostało już kliknięte!")
+                            }  
+                        }}>
+                            <Field src={fieldState[index]}/>
+                        </td>
+                    )
+                })}
+          </tr>
+        ));
+      };
 
-    // //Start/Update Game Area every move
-    // const updateGame = (id) => {
-    //     const updateGameArea = gameArea.map(field => {
-    //     if (field.id === id) {
-    //         if (player === 0) {
-    //             return {
-    //                 ...field,
-    //                 src: crossImg,
-    //                 player: player,
-    //             }
-    //         } else {
-    //             return {
-    //                 ...field,
-    //                 src: circleImg,
-    //                 player: player,
-    //             }
-    //         }
-    //     } 
-    //     return field;
-    //     });
-    //     setGameArea(updateGameArea)
-    // }
+    const saveCoordinations = (rowIndex, colIndex, index) => {
 
+      const newPlayerScore = {x: rowIndex, y: colIndex};
 
+          if (player === 0) {
+            setPlayerOneFields([...playerOneFields, newPlayerScore])
+          } else {
+            setPlayerTwoFields([...playerTwoFields, newPlayerScore])
+          }
 
-    // //Check if someone win the game - set winner
-    // const checkFieldStatus = () => {
-    //         let closedFields = gameArea.map (i => i.player)   
-    //         for (let [a, b, c] of gameWiner) {
-    //             const fieldA = a - 1;
-    //             const fieldB = b - 1;
-    //             const fieldC = c - 1;
-    
-    //             if (closedFields[fieldA] === 0 && closedFields[fieldB] === 0 && closedFields[fieldC] === 0) {
-    //                 setGameStatus(2)
-    //                 setGameText("Wygrywa gracz 1")
-    //                 setPlayerOneScores(playerOneScores + 1)
-    //                 break;
-    //             } else if (closedFields[fieldA] === 1 && closedFields[fieldB] === 1 && closedFields[fieldC] === 1) {
-    //                 setGameStatus(3)
-    //                 setGameText("Wygrywa gracz 2")
-    //                 setPlayerTwoScores(playerTwoScores + 1)
-    //                 break;
-    //             } 
-    //         }
-    // }
-
-    // //Change player
-    // const changePlayerStatement = () => {
-    //     if (player === 0) {
-    //         setPlayer(1);
-    //     } else {
-    //         setPlayer(0);
-    //     }
-    // }
-
-    // //Check each field is filled - Set game Over
-    // const checkGameOver = () => {
-    //     const playerNotEmpty = gameArea.every(i => i.player !== "");
-    //     if (playerNotEmpty) {
-    //         setGameStatus(4)
-    //         setGameText("Nie ma zwycięzcy, zrestartuj aby zagrać ponownie.")
-    //     }
-    // }
-
-    // const closeFunction = (id) => {
-    //     alert("Pole " + id + " zostało już kliknięte!");
-    // }
-
-    // //Reset game and show scores
-    // const resetGame = () => {
-    //     changePlayerStatement()
-    //     setGameStatus(1);
-    //     setGameText("Wygrane rundy:")
-    //     setTextIsActive(true)
-    //     setGameArea(Array.from({length: 9}, (_, i) => ({id: i + 1, src: "", player: ""})));
-    // }
-
-    return (
-        <div>
-            {/* <div className="text"><p>{gameText}</p>
-            <p className={isTextActive ? "small" : "none"}>Gracz pierwszy: {playerOneScores}</p>
-            <p className={isTextActive ? "small" : "none"}>Gracz drugi: {playerTwoScores}</p></div> */}
-            <div className="game-container" style={{display:"grid", gridTemplateColumns: `repeat(${numberOfField}, 30px)`, gridTemplateRows: `repeat(${numberOfField}, 30px)`,}}>
-                {gameArea.map((row) =>
-                    row.map((field) => (
-                        <div key={field.id} onClick={() => konsola(field)} className="game-item"><img className="filler" src={field.src} /></div>
-                    ))
-                )}
-            </div>
-            
-
-            {/* 
-            <button onClick={() => {setNumberOfField(5);setIsActive(true)}} className={isActive ? "none" : "button-item"}>START</button> 
-            <button onClick={resetGame} className={isActive ? "button-item padd" : "none"}>RESTART</button> */}
-        </div>
-    )
+        clickOnField(index)
+        setDeletedFields([...deltedFields, newPlayerScore])
     }
+
+      const clickOnField = (index) => {
+        const newFieldState = [...fieldState];
+        newFieldState[index] = player === 0 ? crossImg : circleImg;
+        setPlayer(player === 0 ? 1 : 0)
+        setFieldState(newFieldState);
+    }
+
+    useEffect(() => {
+      const sortedX = playerOneFields.sort((a, b) => a.x - b.x);
+      const srotedY = playerOneFields.sort((a, b) => a.y - b.y);
+      // console.log(sortedX)
+      // console.log(srotedY)
+      if (sortedX.length > 4) {
+        for (let i = 0; i <= sortedX.length - 5; i++) {
+          if (sortedX[i].x === sortedX[i + 1].x && 
+            sortedX[i].x === sortedX[i + 2].x && 
+            sortedX[i].x === sortedX[i + 3].x && 
+            sortedX[i].x === sortedX[i + 4].x)  
+          {
+            // for (let j=0; j <= srotedY.length - 5; j++) {
+              
+            // }
+
+          }
+        }
+      }
+
+    }, [deltedFields])
+      
+      return (
+        <div>
+            <table className="game-container">
+                <tbody>{gameArea()}</tbody>
+            </table>
+        </div>
+      );
+}
 
 export default GameFieldArea;
