@@ -9,7 +9,6 @@ const GameFieldArea = () => {
 
   const [isActive, setIsActive] = useState(false);
   const [headerText, setHeaderText] = useState();
-  const [animated, setAnimated] = useState(false);
 
   const [numberOfField, setNumberOfField] = useState(5);
 
