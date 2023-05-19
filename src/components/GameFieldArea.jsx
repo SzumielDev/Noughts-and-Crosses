@@ -1,188 +1,206 @@
 import React, { useEffect, useState } from "react";
-import Field from './Field';
-import GameText from './GameText';
-import NumberOfFieldInput from './NumberOfFieldInput';
+import GameText from "./GameText";
+import NumberOfFieldInput from "./NumberOfFieldInput";
+import Field from "./Field";
 import circleImg from "./../resources/images/circle.png";
 import crossImg from "./../resources/images/cross.png";
 
 const GameFieldArea = () => {
 
-    const [isActive, setIsActive] = useState(false);
-    const [text, setText] = useState();
+  const [isActive, setIsActive] = useState(false);
+  const [headerText, setHeaderText] = useState();
+  const [animated, setAnimated] = useState(false);
 
-    //Definde how big is gameArea
-    const [numberOfField, setNumberOfField] = useState(5);
+  const [numberOfField, setNumberOfField] = useState(5);
 
-    const [playerOneFields, setPlayerOneFields] = useState([]);
-    const [playerTwoFields, setPlayerTwoFields] = useState([]);
-    const [deltedFields, setDeletedFields] = useState([]);
+  const [playerOneFields, setPlayerOneFields] = useState([]);
+  const [playerTwoFields, setPlayerTwoFields] = useState([]);
 
-    //0 = not started
-    //1 = game in progress
-    //2 = game ended winner 0
-    //3 = game ended winner 1
-    //4 = game over
-    const [gameStatus, setGameStatus] = useState(0);
+  const [usedFields, setUsedFields] = useState([]);
 
-    const gameStatusText = {
-      0: "Wpisz wielkość planszy. Min - 5 x 5 / Max - 15 x 15",
-      1: "Gra w trakcie",
-      2: "Wygrywa gracz 1",
-      3: "Wygrywa gracz 2",
-      4: "Koniec gry, brak wygranych"
-    };
+  //Currently game status
+  //0 = not started
+  //1 = game in progress
+  //2 = game ended winner 0
+  //3 = game ended winner 1
+  //4 = game over
+  const [gameStatus, setGameStatus] = useState(0);
 
-    const [player, setPlayer] = useState(0);
+  const gameStatusText = {
+    0: "Wpisz wielkość planszy.",
+    1: "Gra w trakcie",
+    2: "Wygrywa gracz 1",
+    3: "Wygrywa gracz 2",
+    4: "Koniec gry, brak wygranych",
+  };
 
-    const [fieldState, setFieldState] = useState(
-      Array.from({ length: numberOfField * numberOfField }, () => null)
-    );
+  const [player, setPlayer] = useState(1);
 
-    const setNumberOfFields = (number) => {
-      setNumberOfField(number);
+  const [fieldState, setFieldState] = useState(
+    Array.from({ length: numberOfField * numberOfField }, () => null)
+  );
+
+  const setNumberOfFields = (number) => {
+    setNumberOfField(number);
+  };
+
+  const gameAreaTemplate = () => {
+    return Array.from({ length: numberOfField }, (_, rowIndex) => (
+      <tr key={rowIndex}>
+        {Array.from({ length: numberOfField }, (_, colIndex) => {
+          const index = rowIndex * numberOfField + colIndex;
+          return (
+            <td
+              key={index}
+              onClick={handleClickedField(rowIndex, colIndex, index)}
+            >
+              <Field src={fieldState[index]} />
+            </td>
+          );
+        })}
+      </tr>
+    ));
+  };
+
+  const handleClickedField = (rowIndex, colIndex, index) =>  () => {
+    if (!fieldState[index] && gameStatus === 1) {
+      saveCoordinations(rowIndex, colIndex, index);
+    } else if (gameStatus === 1) {
+      alert("To pole zostało już kliknięte!");
+    } else {
+      alert("Gra zakończona!");
+    }
+  }
+
+  const saveCoordinations = (rowIndex, colIndex, index) => {
+    const newPlayerScore = { x: rowIndex, y: colIndex };
+    showCoordinationsInTextAreaAfterMove(newPlayerScore);
+
+    if (player === 0) {
+      setPlayerOneFields([...playerOneFields, newPlayerScore]);
+    } else {
+      setPlayerTwoFields([...playerTwoFields, newPlayerScore]);
     }
 
-    //Generate Game Area -----------------------------------
-    const gameArea = () => {
-        return Array.from({ length: numberOfField }, (_, rowIndex) => (
-          <tr key={rowIndex}>
-                {Array.from({ length: numberOfField }, (_, colIndex) => {
-                    const index = rowIndex * numberOfField + colIndex
-                    return (
-                        <td key={index} onClick={() => {
-                            if (!fieldState[index] && gameStatus === 1) {
-                              saveCoordinations(rowIndex, colIndex, index)
-                            } else if (gameStatus === 1) {
-                              alert("To pole zostało już kliknięte!")
-                            } else {
-                              alert("Gra zakończona!")
-                            }
-                        }}>
-                            <Field src={fieldState[index]}/>
-                        </td>
-                    )
-                })}
-          </tr>
-        ));
-      };
+    setUsedFields([...usedFields, newPlayerScore]);
+    updateGameArea(index);
+  };
 
-    //Save field to indicated player / fill field ----------------------------
-    const saveCoordinations = (rowIndex, colIndex, index) => {
+  const showCoordinationsInTextAreaAfterMove = (coordinations) => {
+    setHeaderText(`Gracz ${player} zaznaczył pole x: ${coordinations.x} y: ${coordinations.y}`);
+  }
 
-      const newPlayerScore = {x: rowIndex, y: colIndex};
+  const updateGameArea = (index) => {
+    const newFieldState = [...fieldState];
+    newFieldState[index] = player === 0 ? crossImg : circleImg;
+    setFieldState(newFieldState);
+  };
 
-          if (player === 0) {
-            setPlayerOneFields([...playerOneFields, newPlayerScore])
-          } else {
-            setPlayerTwoFields([...playerTwoFields, newPlayerScore])
-          }
+  const checkGamesStatusEveryMove = (playerFields) => {
+    const playerFieldsSortedByX = [...playerFields];
+    const playerFieldsSortedByY = [...playerFields];
 
-        clickOnField(index)
-        setDeletedFields([...deltedFields, newPlayerScore])
+    const sortedByX = playerFieldsSortedByX.sort((a, b) => (a.x === b.x ? a.y - b.y : a.x - b.x));
+    const sortedByY = playerFieldsSortedByY.sort((a, b) => (a.y === b.y ? a.x - b.x : a.y - b.y));
+
+    if (playerOneFields.length > 4) {
+      checkCol(sortedByY);
+      checkRow(sortedByX);
+      checkCross(sortedByY);
+      checkIfThereIsStillavailableFields();
     }
+  };
 
-      const clickOnField = (index) => {
-        const newFieldState = [...fieldState];
-        newFieldState[index] = player === 0 ? crossImg : circleImg;
-        setPlayer(player === 0 ? 1 : 0)
-        setFieldState(newFieldState);
-    }
+  const checkCol = (sortedByY) => {
+    for (let i = 0; i <= sortedByY.length - 5; i++) {
+      const sliceY = sortedByY.slice(i, i + 5).map((field) => field.y);
+      const sliceX = sortedByY.slice(i, i + 5).map((field) => field.x);
 
-    //Check winner fields every move ------------------------------
-    const checkCol = (sortedB) => {
-      for (let i = 0; i <= sortedB.length - 5; i++) {
-        const sliceY = sortedB.slice(i, i + 5).map(field => field.y);
-        const sliceX = sortedB.slice(i, i + 5).map(field => field.x);
-
-        if (sliceY.every(y => y === sliceY[0]) && sliceX.every((x, index) => x === sliceX[0] + index)) {
-          setGameStatus(player === 0 ? 2 : 3);
-        }
+      if (
+        sliceY.every((y) => y === sliceY[0]) &&
+        sliceX.every((x, index) => x === sliceX[0] + index)
+      ) {
+        setGameStatus(player === 0 ? 2 : 3);
       }
     }
+  };
 
-    const checkRow = (sortedA) => {    
-      for (let i = 0; i <= sortedA.length - 5; i++) {
-        const sliceY = sortedA.slice(i, i + 5).map(field => field.x);
-        const sliceX = sortedA.slice(i, i + 5).map(field => field.y);
+  const checkRow = (sortedByX) => {
+    for (let i = 0; i <= sortedByX.length - 5; i++) {
+      const sliceY = sortedByX.slice(i, i + 5).map((field) => field.x);
+      const sliceX = sortedByX.slice(i, i + 5).map((field) => field.y);
 
-        if (sliceY.every(x => x === sliceY[0]) && sliceX.every((y, index) => y === sliceX[0] + index)) {
-          setGameStatus(player === 0 ? 2 : 3);
-        }
+      if (
+        sliceY.every((x) => x === sliceY[0]) &&
+        sliceX.every((y, index) => y === sliceX[0] + index)
+      ) {
+        setGameStatus(player === 0 ? 2 : 3);
       }
     }
+  };
 
-    const checkCross = (sortedB) => {
-      for (let i = 0; i < sortedB.length - 4; i++) {
-        const { x, y } = sortedB[i];
-        const isMatch = (mx, my) => [1, 2, 3, 4].every((n) => checkCrossFiled(sortedB, x + n * mx, y + n * my));
+  const checkCross = (sortedByY) => {
+    for (let i = 0; i < sortedByY.length - 4; i++) {
+      const { x, y } = sortedByY[i];
+      const isMatch = (mx, my) =>
+        [1, 2, 3, 4].every((n) =>
+        isPairInSortedCrossList(sortedByY, x + n * mx, y + n * my)
+        );
 
-        if (isMatch(1, 1) || isMatch(-1, 1)) {
-          setGameStatus(player === 0 ? 2 : 3);
-          break;
-        }
+      if (isMatch(1, 1) || isMatch(-1, 1)) {
+        setGameStatus(player === 0 ? 2 : 3);
+        break;
       }
     }
+  };
 
-    const checkCrossFiled = (sortedB, x, y) => {
-      for (let i = 0; i < sortedB.length; i++) {
-        if (sortedB[i].x === x && sortedB[i].y === y) {
-          return true;
-        }
-      }
-      return false;
-    }
-
-    const checkIfThereIsStillFields = () => {
-      const sumFields = numberOfField * numberOfField;
-      if (deltedFields.length === sumFields) {
-        setGameStatus(4);
+  const isPairInSortedCrossList = (sortedByY, x, y) => {
+    for (let i = 0; i < sortedByY.length; i++) {
+      if (sortedByY[i].x === x && sortedByY[i].y === y) {
+        return true;
       }
     }
+    return false;
+  };
 
-    //-----------------------------------------------
-
-    const pickPlayerToSort = (sortedA, sortedB) => {
-
-      sortedA.sort((a, b) => a.x === b.x ? a.y - b.y : a.x - b.x);
-      sortedB.sort((a, b) => a.y === b.y ? a.x - b.x : a.y - b.y); 
-
-      if (playerOneFields.length > 4) {
-        checkCol(sortedB);
-        checkRow(sortedA);
-        checkCross(sortedB);
-        checkIfThereIsStillFields();
-      }
+  const checkIfThereIsStillavailableFields = () => {
+    const sumFields = numberOfField * numberOfField;
+    if (usedFields.length === sumFields) {
+      setGameStatus(4);
     }
+  };
 
-    useEffect(() => { 
-      const sortedA = player === 0 ? [...playerOneFields] : [...playerTwoFields];
-      const sortedB = [...sortedA];
-      pickPlayerToSort(sortedA, sortedB);
+  const changePlayerAfterHisMove = () => {
+    setPlayer(player === 0 ? 1 : 0);
+  }
 
-      }, [deltedFields])
+  useEffect(() => {
+    const playerFields = player === 0 ?  [...playerOneFields] : [...playerTwoFields];
+    checkGamesStatusEveryMove(playerFields);
+    changePlayerAfterHisMove();
+  }, [usedFields]);
 
-      useEffect(() => {
-        setText(gameStatusText[gameStatus]);
-      }, [gameStatus])
-      
-      return (
-        <div>
-            <GameText text={text} />
+  useEffect(() => {
+    setHeaderText(gameStatusText[gameStatus]);
+  }, [gameStatus]);
 
-            <NumberOfFieldInput 
-              setGameStatus={setGameStatus}
-              setIsActive={setIsActive}
-              setText={setText}
-              setNumberOfFields={setNumberOfFields}
-              isActive={isActive}
-            />
-            
-            <table className={isActive ? "game-container" : "none"}>
-                <tbody>{gameArea()}</tbody>
-            </table>
-            
-        </div>
-      );
-}
+  return (
+    <div>
+      <GameText headerText={headerText} isActive={isActive} />
+
+      <NumberOfFieldInput
+        setGameStatus={setGameStatus}
+        setIsActive={setIsActive}
+        setHeaderText={setHeaderText}
+        setNumberOfFields={setNumberOfFields}
+        isActive={isActive}
+      />
+
+      <table className={isActive ? "game-container" : "none"}>
+        <tbody>{gameAreaTemplate()}</tbody>
+      </table>
+    </div>
+  );
+};
 
 export default GameFieldArea;
