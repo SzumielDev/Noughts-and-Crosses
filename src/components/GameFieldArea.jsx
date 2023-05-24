@@ -26,7 +26,7 @@ const GameFieldArea = () => {
   const [gameStatus, setGameStatus] = useState(0);
 
   const gameStatusText = {
-    0: "Wpisz wielkość planszy.",
+    0: "Wpisz wielkość planszy. Aby wygrać musisz zakreślić 5 pól obok siebie.",
     1: "Gra w trakcie",
     2: "Wygrywa gracz 1",
     3: "Wygrywa gracz 2",
