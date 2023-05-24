@@ -1,0 +1,16 @@
+{
+  "files": {
+    "main.css": "/Noughts-and-Crosses/static/css/main.9a619c1e.css",
+    "main.js": "/Noughts-and-Crosses/static/js/main.d3c061a0.js",
+    "static/js/787.ad3e95ed.chunk.js": "/Noughts-and-Crosses/static/js/787.ad3e95ed.chunk.js",
+    "static/media/crossandcircleimage.png": "/Noughts-and-Crosses/static/media/crossandcircleimage.09c54936b601daacbc61.png",
+    "index.html": "/Noughts-and-Crosses/index.html",
+    "main.9a619c1e.css.map": "/Noughts-and-Crosses/static/css/main.9a619c1e.css.map",
+    "main.d3c061a0.js.map": "/Noughts-and-Crosses/static/js/main.d3c061a0.js.map",
+    "787.ad3e95ed.chunk.js.map": "/Noughts-and-Crosses/static/js/787.ad3e95ed.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.9a619c1e.css",
+    "static/js/main.d3c061a0.js"
+  ]
+}
